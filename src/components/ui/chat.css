@@ -1,58 +1,67 @@
-/* ===== RESET ===== */
+/* ===== RESET & HARD LOCK ===== */
 * {
   box-sizing: border-box;
 }
 
 html,
 body {
+  height: 100%;
   margin: 0;
   padding: 0;
-  height: 100%;
+  overflow: hidden; /* 🔥 disables body scroll */
   font-family:
     -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
-  background-color: #eef2ff;
+  background: #eef2ff;
 }
 
 /* ===== APP CONTAINER ===== */
 .happy-container {
-  height: 100vh;
+  height: 100dvh; /* 🔥 mobile-safe viewport */
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* 🔥 nothing inside leaks */
   background: #f8fafc;
 }
 
 /* ===== HEADER ===== */
 .happy-header {
   height: 56px;
+  min-height: 56px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: left;
-  padding-left: 15px;
+  justify-content: center;
+  position: relative;
+
   font-size: 17px;
   font-weight: 600;
   color: #1f2937;
+
   background: linear-gradient(90deg, #dbeafe, #eff6ff);
   border-bottom: 1px solid #e5e7eb;
-  flex-shrink: 0;
 }
+
+/* Clear button */
 .clear-btn {
   position: absolute;
   right: 12px;
-  background: transparent;
   border: none;
+  background: transparent;
   font-size: 16px;
   cursor: pointer;
 }
 
-/* ===== CHAT BACKGROUND WITH SCRIBBLES ===== */
+/* ===== CHAT AREA (ONLY SCROLLABLE PART) ===== */
 .chat-box {
-  flex: 1;
+  flex: 1 1 auto; /* 🔥 takes remaining height */
   overflow-y: auto;
+  overscroll-behavior: contain; /* 🔥 stops rubber-band scroll */
   padding: 14px;
+
   background-color: #f1f5f9;
   background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 40 Q20 20 40 30 T70 40' stroke='%23c7d2fe' stroke-width='2' fill='none' opacity='0.25'/%3E%3C/svg%3E");
 }
@@ -69,7 +78,7 @@ body {
   animation: fadeIn 0.2s ease-in;
 }
 
-/* ===== INCOMING (BOT) ===== */
+/* Incoming (bot) */
 .bot {
   background: #ffffff;
   color: #1f2937;
@@ -77,7 +86,7 @@ body {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
-/* ===== OUTGOING (USER) ===== */
+/* Outgoing (user) */
 .user {
   margin-left: auto;
   color: #ffffff;
@@ -88,20 +97,24 @@ body {
 
 /* ===== INPUT AREA ===== */
 .input-area {
+  height: 56px;
+  min-height: 56px;
+  flex-shrink: 0;
   display: flex;
   gap: 10px;
-  padding: 10px;
+  padding: 8px 10px;
+
   background: #ffffff;
   border-top: 1px solid #e5e7eb;
-  flex-shrink: 0;
 }
 
+/* Input */
 .input-area input {
   flex: 1;
-  height: 42px;
+  height: 40px;
   padding: 0 14px;
   font-size: 14px;
-  border-radius: 21px;
+  border-radius: 20px;
   border: 1px solid #d1d5db;
   outline: none;
 }
@@ -110,14 +123,15 @@ body {
   border-color: #3b82f6;
 }
 
+/* Send button */
 .input-area button {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: none;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
 }
@@ -138,7 +152,7 @@ body {
   }
 }
 
-/* ===== MOBILE ===== */
+/* ===== MOBILE SAFETY ===== */
 @media (max-width: 480px) {
   .happy-container {
     max-width: 100%;
