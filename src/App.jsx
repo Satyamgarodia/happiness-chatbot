@@ -6,7 +6,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<GoogleGeminiEffectDemo />} />
+        {/* <Route path="/" element={<GoogleGeminiEffectDemo />} /> */}
+        <Route path="/" element={<Chatbot />} />
         <Route path="/chat" element={<Chatbot />} />
       </Routes>
     </BrowserRouter>
