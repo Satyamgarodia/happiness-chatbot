@@ -39,6 +39,14 @@ body {
   border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;
 }
+.clear-btn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
 
 /* ===== CHAT BACKGROUND WITH SCRIBBLES ===== */
 .chat-box {

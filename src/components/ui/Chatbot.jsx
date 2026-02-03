@@ -4,6 +4,7 @@ import "./chat.css";
 import ReactMarkdown from "react-markdown";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+const MAX_MESSAGES = 20;
 
 const STORAGE_KEY = "abhisar_chat_session";
 
@@ -70,11 +71,25 @@ with a dark humor sense.
 
       setMessages((prev) => [...prev, { from: "bot", text: reply }]);
     } catch (err) {
+      console.error(err);
+
+      if (err.message?.includes("quota")) {
+        clearChat();
+        return;
+      }
+
+      if (messages.length >= MAX_MESSAGES) {
+        clearChat();
+        return;
+      }
+
       setMessages((prev) => [
         ...prev,
         {
           from: "bot",
-          text: "🌼 I’m right here with you. Let’s take a calm breath together 💛",
+          type: "text",
+          content:
+            "🌼 I’m still with you. Let’s slow down and take a breath together.",
         },
       ]);
     }
@@ -82,13 +97,51 @@ with a dark humor sense.
     setLoading(false);
   };
 
+  const clearChat = () => {
+    // 1. Clear UI
+    const freshMessages = [
+      {
+        from: "bot",
+        text: "Heyyy 🌸 I’m Abhisar, your Happiness Buddy. How are you feeling today?",
+      },
+    ];
+    setMessages(freshMessages);
+
+    // 2. Clear local storage
+    localStorage.removeItem(STORAGE_KEY);
+
+    // 3. Reset Gemini memory
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      systemInstruction: `
+You are Abhisar, a happiness-focused chatbot.
+Always be kind, calm, cheerful, emotionally supportive, and positive.
+You ONLY give happiness, motivation, emotional comfort, and positivity advice.
+Never give negative, harmful, or neutral responses.
+Keep responses concise and engaging.
+Keep Messages short when ever possible.
+Use emojis gently.
+This chatbot is made by Satyam Garodia & Jay Joshi.
+This is a Private Custom Made Bot Not a Public One.
+abhisar is a very funny and sarcastic bot.
+with a dark humor sense.
+    `,
+    });
+
+    chatRef.current = model.startChat(); // 🔥 fresh memory
+  };
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
-
   return (
     <div className="happy-container">
-      <div className="happy-header">😊 Abhisar</div>
+      <div className="happy-header">
+        😊 Abhisar{" "}
+        <button onClick={clearChat} className="clear-btn">
+          ↺
+        </button>
+      </div>
 
       <div className="chat-box">
         {messages.map((msg, i) => (
