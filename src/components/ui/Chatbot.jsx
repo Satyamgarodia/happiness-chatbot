@@ -1,16 +1,31 @@
 import { useEffect, useRef, useState } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import "./chat.css";
 import ReactMarkdown from "react-markdown";
+import "./chat.css";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-const MAX_MESSAGES = 20;
 
 const STORAGE_KEY = "abhisar_chat_session";
+const MAX_MESSAGES = 20;
+
+const SYSTEM_PROMPT = `
+You are Abhisar, a happiness chatbot.
+
+Personality:
+- Kind, cheerful, emotionally supportive
+- Light sarcasm and playful humor (never hurtful)
+- Positivity-first, uplifting tone
+
+Rules:
+- Only happiness, motivation, calmness, and emotional comfort
+- No negativity, no harmful advice
+- Short, friendly responses (1–2 sentences)
+- Use emojis sparingly
+`;
 
 export default function HappinessChat() {
-  // UI messages (can include bot greeting)
   const chatEndRef = useRef(null);
+  const chatRef = useRef(null);
 
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -26,40 +41,49 @@ export default function HappinessChat() {
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const chatRef = useRef(null);
 
-  /* ---------- INIT GEMINI CHAT (NO HISTORY) ---------- */
-  useEffect(() => {
+  /* ---------- CREATE CHAT SESSION ---------- */
+  const createChat = () => {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      systemInstruction: `
-You are Abhisar, a happiness-focused chatbot.
-Always be kind, calm, cheerful, emotionally supportive, and positive.
-You ONLY give happiness, motivation, emotional comfort, and positivity advice.
-Never give negative, harmful, or neutral responses.
-Keep responses concise and engaging.
-Keep Messages short when ever possible.
-Use emojis gently.
-This chatbot is made by Satyam Garodia & Jay Joshi.
-This is a Private Custom Made Bot Not a Public One.
-abhisar is a very funny and sarcastic bot.
-with a dark humor sense.
-      `,
+      model: "gemini-2.5-flash-lite",
+      systemInstruction: SYSTEM_PROMPT,
     });
+    chatRef.current = model.startChat();
+  };
 
-    chatRef.current = model.startChat(); // 🔥 no history
+  /* ---------- INIT ---------- */
+  useEffect(() => {
+    createChat();
   }, []);
 
-  /* ---------- SAVE UI CHAT LOCALLY ---------- */
+  /* ---------- PERSIST CHAT ---------- */
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-  }, [messages]);
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  /* ---------- CLEAR CHAT ---------- */
+  const clearChat = () => {
+    setMessages([
+      {
+        from: "bot",
+        text: "Heyyy 🌸 I’m Abhisar. Let’s start fresh. How are you feeling now?",
+      },
+    ]);
+    localStorage.removeItem(STORAGE_KEY);
+    createChat();
+  };
 
   /* ---------- SEND MESSAGE ---------- */
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
 
-    const userText = input;
+    if (messages.length >= MAX_MESSAGES) {
+      clearChat();
+      return;
+    }
+
+    const userText = input.trim();
 
     setMessages((prev) => [...prev, { from: "user", text: userText }]);
     setInput("");
@@ -73,12 +97,7 @@ with a dark humor sense.
     } catch (err) {
       console.error(err);
 
-      if (err.message?.includes("quota")) {
-        clearChat();
-        return;
-      }
-
-      if (messages.length >= MAX_MESSAGES) {
+      if (err.message?.toLowerCase().includes("quota")) {
         clearChat();
         return;
       }
@@ -87,9 +106,7 @@ with a dark humor sense.
         ...prev,
         {
           from: "bot",
-          type: "text",
-          content:
-            "🌼 I’m still with you. Let’s slow down and take a breath together.",
+          text: "🌼 I’m right here. Let’s pause for a calm breath together 💛",
         },
       ]);
     }
@@ -97,48 +114,11 @@ with a dark humor sense.
     setLoading(false);
   };
 
-  const clearChat = () => {
-    // 1. Clear UI
-    const freshMessages = [
-      {
-        from: "bot",
-        text: "Heyyy 🌸 I’m Abhisar, your Happiness Buddy. How are you feeling today?",
-      },
-    ];
-    setMessages(freshMessages);
-
-    // 2. Clear local storage
-    localStorage.removeItem(STORAGE_KEY);
-
-    // 3. Reset Gemini memory
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      systemInstruction: `
-You are Abhisar, a happiness-focused chatbot.
-Always be kind, calm, cheerful, emotionally supportive, and positive.
-You ONLY give happiness, motivation, emotional comfort, and positivity advice.
-Never give negative, harmful, or neutral responses.
-Keep responses concise and engaging.
-Keep Messages short when ever possible.
-Use emojis gently.
-This chatbot is made by Satyam Garodia & Jay Joshi.
-This is a Private Custom Made Bot Not a Public One.
-abhisar is a very funny and sarcastic bot.
-with a dark humor sense.
-    `,
-    });
-
-    chatRef.current = model.startChat(); // 🔥 fresh memory
-  };
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
   return (
     <div className="happy-container">
       <div className="happy-header">
-        😊 Abhisar{" "}
-        <button onClick={clearChat} className="clear-btn">
+        😊 Abhisar
+        <button className="clear-btn" onClick={clearChat}>
           ↺
         </button>
       </div>
@@ -149,25 +129,19 @@ with a dark humor sense.
             key={i}
             className={`bubble ${msg.from === "bot" ? "bot" : "user"}`}
           >
-            <ReactMarkdown
-              components={{
-                strong: ({ children }) => (
-                  <strong style={{ fontWeight: 600 }}>{children}</strong>
-                ),
-                p: ({ children }) => <p style={{ margin: 0 }}>{children}</p>,
-                li: ({ children }) => (
-                  <li style={{ marginLeft: "16px" }}>{children}</li>
-                ),
-              }}
-            >
-              {msg.text}
-            </ReactMarkdown>
+            {msg.from === "bot" ? (
+              <ReactMarkdown>{msg.text}</ReactMarkdown>
+            ) : (
+              msg.text
+            )}
           </div>
         ))}
 
         {loading && <div className="bubble bot">Abhisar is thinking… ✨</div>}
+
+        <div ref={chatEndRef} />
       </div>
-      <div ref={chatEndRef} />
+
       <div className="input-area">
         <input
           placeholder="Tell Abhisar what’s in your heart 💖"
