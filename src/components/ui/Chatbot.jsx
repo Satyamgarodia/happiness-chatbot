@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import "./chat.css";
+import ReactMarkdown from "react-markdown";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
@@ -8,6 +9,8 @@ const STORAGE_KEY = "abhisar_chat_session";
 
 export default function HappinessChat() {
   // UI messages (can include bot greeting)
+  const chatEndRef = useRef(null);
+
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved
@@ -32,6 +35,9 @@ export default function HappinessChat() {
 You are Abhisar, a happiness-focused chatbot.
 Always be kind, calm, cheerful, emotionally supportive, and positive.
 You ONLY give happiness, motivation, emotional comfort, and positivity advice.
+Never give negative, harmful, or neutral responses.
+Keep responses concise and engaging.
+Keep Messages short when ever possible.
 Use emojis gently.
       `,
     });
@@ -72,6 +78,10 @@ Use emojis gently.
     setLoading(false);
   };
 
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
   return (
     <div className="happy-container">
       <div className="happy-header">😊 Abhisar</div>
@@ -82,13 +92,25 @@ Use emojis gently.
             key={i}
             className={`bubble ${msg.from === "bot" ? "bot" : "user"}`}
           >
-            {msg.text}
+            <ReactMarkdown
+              components={{
+                strong: ({ children }) => (
+                  <strong style={{ fontWeight: 600 }}>{children}</strong>
+                ),
+                p: ({ children }) => <p style={{ margin: 0 }}>{children}</p>,
+                li: ({ children }) => (
+                  <li style={{ marginLeft: "16px" }}>{children}</li>
+                ),
+              }}
+            >
+              {msg.text}
+            </ReactMarkdown>
           </div>
         ))}
 
         {loading && <div className="bubble bot">Abhisar is thinking… ✨</div>}
       </div>
-
+      <div ref={chatEndRef} />
       <div className="input-area">
         <input
           placeholder="Tell Abhisar what’s in your heart 💖"
@@ -96,7 +118,7 @@ Use emojis gently.
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
-        <button onClick={sendMessage}>🌈</button>
+        <button onClick={sendMessage}>🛩️</button>
       </div>
     </div>
   );
