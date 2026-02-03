@@ -1,16 +1,15 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GoogleGeminiEffectDemo } from "./Home";
+import Chatbot from "./components/ui/Chatbot";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
-      <GoogleGeminiEffectDemo />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<GoogleGeminiEffectDemo />} />
+        <Route path="/chat" element={<Chatbot />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

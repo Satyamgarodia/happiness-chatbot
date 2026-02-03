@@ -21,8 +21,8 @@ export function GoogleGeminiEffectDemo() {
       ref={ref}
     >
       <GoogleGeminiEffect
-        title="Satyam Garodia"
-        description="Software Developer"
+        title="Happiness Chatbot"
+        description="Happiness is an AI-powered chatbot designed to bring joy and positivity to your day. Whether you need a quick pick-me-up or a friendly conversation, Happiness is here to brighten your mood and spread smiles."
         className
         pathLengths={[
           pathLengthFirst,
