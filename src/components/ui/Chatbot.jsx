@@ -339,7 +339,12 @@ export default function HappinessChat() {
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && sendMessage()}
         />
-        <button className="send-btn" onClick={sendMessage} disabled={loading}>🛩️</button>
+        <button className="send-btn" onClick={sendMessage} disabled={loading}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round">
+            <polygon points="2,2 22,12 2,22" fill="white" stroke="white" strokeWidth="1.5"/>
+            <line x1="2" y1="12" x2="13" y2="12" stroke="var(--user-end)" strokeWidth="1.5"/>
+          </svg>
+        </button>
       </div>
     </div>
   );
